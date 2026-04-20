@@ -24,7 +24,6 @@ body {
   background: linear-gradient(#5fa8ff,#2d6cdf);
   display: flex;
   align-items: center;
-  justify-content: space-between;
   padding: 0 10px;
   color: white;
 }
@@ -47,10 +46,6 @@ body {
 
 .forum {
   padding:20px;
-}
-
-.forum h2 {
-  color:#0055aa;
 }
 
 input, textarea {
@@ -82,96 +77,132 @@ button {
   font-weight:bold;
 }
 
+.like {
+  cursor:pointer;
+  color:#ff3366;
+}
 </style>
 </head>
 
 <body>
 
 <div class="window">
+  <div class="titlebar">clube_dos_haters_do_silas.exe</div>
 
-<div class="titlebar">
-  clube_dos_haters_do_silas.exe
+  <div class="header">
+    <h1>CLUBE DOS HATERS DO SILAS</h1>
+    <div class="slogan">Investindo bem nos alunos que também odeiam o silas!!!!</div>
+  </div>
+
+  <div class="forum">
+    <h2>Fórum dos Haters</h2>
+
+    <input id="name" placeholder="Seu nome">
+    <textarea id="comment" placeholder="Escreva algo..."></textarea>
+    <input type="file" id="imageUpload">
+    <button onclick="postComment()">Postar</button>
+
+    <div id="posts"></div>
+  </div>
 </div>
 
-<div class="header">
-  <h1>CLUBE DOS HATERS DO SILAS</h1>
-  <div class="slogan">Investindo bem nos alunos que também odeiam o silas!!!!</div>
-</div>
+<script>
+const API = "/api/posts";
 
-<div class="forum">
-  <h2>Fórum dos Haters</h2>
+// 🔒 escape (important)
+function escapeHtml(s) {
+  return String(s ?? "").replace(/[&<>"']/g, c => ({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    "\"":"&quot;",
+    "'":"&#39;"
+  }[c]));
+}
 
-  <input type="text" id="name" placeholder="Seu nome">
-  <textarea id="comment" placeholder="Escreva algo..."></textarea>
-  <input type="file" id="imageUpload">
-  <button onclick="postComment()">Postar</button>
-
-  <div id="posts"></div>
-</div>
-
-</div>
-
-<!-- FIREBASE -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "SUA_API_KEY",
-  authDomain: "SEU_PROJETO.firebaseapp.com",
-  projectId: "SEU_PROJECT_ID"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-// REALTIME POSTS (THIS FIXES YOUR PROBLEM)
-onSnapshot(collection(db, "posts"), (snapshot) => {
+// 🎨 render
+function renderPosts(posts) {
   const container = document.getElementById("posts");
   container.innerHTML = "";
 
-  snapshot.forEach((doc) => {
-    const p = doc.data();
-
+  posts.forEach(p => {
     const div = document.createElement("div");
     div.className = "post";
 
     div.innerHTML = `
-      <div class="username">${p.name}</div>
-      <p>${p.text}</p>
-      ${p.image ? `<img src="${p.image}" width="200">` : ""}
+      <div class="username">${escapeHtml(p.name)}</div>
+      <p>${escapeHtml(p.text)}</p>
+      ${p.image ? `<img src="${escapeHtml(p.image)}" width="200">` : ""}
+      <div class="like">❤️ ${p.likes || 0}</div>
     `;
+
+    div.querySelector(".like").onclick = async () => {
+      await fetch(`${API}?id=${encodeURIComponent(p.id)}`, {
+        method: "PATCH"
+      });
+      loadPosts();
+    };
 
     container.appendChild(div);
   });
-});
+}
 
-// POST FUNCTION
-window.postComment = async function () {
-  const name = document.getElementById("name").value || "Anônimo";
-  const text = document.getElementById("comment").value;
-  const file = document.getElementById("imageUpload").files[0];
+// 🔄 load posts
+async function loadPosts() {
+  try {
+    const res = await fetch(API, { cache: "no-store" });
+    const data = await res.json();
+    renderPosts(data.posts || []);
+  } catch (err) {
+    console.error("load error", err);
+  }
+}
+
+// 📸 read image
+function readFile(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => resolve(e.target.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// ✏️ post
+async function postComment() {
+  const nameEl = document.getElementById("name");
+  const commentEl = document.getElementById("comment");
+  const fileEl = document.getElementById("imageUpload");
+
+  const name = nameEl.value || "Anônimo";
+  const text = commentEl.value;
+  const file = fileEl.files[0];
 
   if (!text && !file) return;
 
+  let image = null;
+
   if (file) {
-    const reader = new FileReader();
-    reader.onload = async function (e) {
-      await addDoc(collection(db, "posts"), {
-        name,
-        text,
-        image: e.target.result
-      });
-    };
-    reader.readAsDataURL(file);
-  } else {
-    await addDoc(collection(db, "posts"), {
-      name,
-      text,
-      image: null
-    });
+    image = await readFile(file);
   }
-};
+
+  await fetch(API, {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ name, text, image })
+  });
+
+  commentEl.value = "";
+  fileEl.value = "";
+
+  loadPosts();
+}
+
+// 🔁 auto refresh
+setInterval(loadPosts, 3000);
+
+// 🚀 initial
+loadPosts();
 </script>
 
 </body>
