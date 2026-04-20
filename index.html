@@ -7,83 +7,26 @@
 <style>
 body {
   margin: 0;
-  font-family: Segoe UI, Tahoma;
-  background: linear-gradient(180deg,#6ec6ff,#1e90ff,#0b3c91);
+  font-family: Segoe UI;
+  background: linear-gradient(#6ec6ff,#1e90ff,#0b3c91);
 }
 
 .window {
   width: 900px;
   margin: 40px auto;
-  border-radius: 8px;
-  background: linear-gradient(#dfefff,#a9cfff);
-  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-}
-
-.titlebar {
-  height: 32px;
-  background: linear-gradient(#5fa8ff,#2d6cdf);
-  display: flex;
-  align-items: center;
-  padding: 0 10px;
-  color: white;
-}
-
-.header {
-  text-align:center;
-  padding:50px;
-  background: linear-gradient(#9be7ff,#00bfff,#0077cc);
-}
-
-.header h1 {
-  margin:0;
-  color:white;
-}
-
-.content {
-  display:grid;
-  grid-template-columns: repeat(auto-fit,minmax(250px,1fr));
-  gap:20px;
-  padding:20px;
-}
-
-.card {
-  background:#fff;
-  border-radius:12px;
-  padding:15px;
-}
-
-.forum {
-  padding:20px;
-}
-
-input, textarea {
-  width:100%;
-  margin-top:8px;
-  padding:8px;
-  border-radius:8px;
-}
-
-button {
-  margin-top:10px;
-  padding:10px;
-  border:none;
-  border-radius:8px;
-  background:#0077cc;
-  color:white;
-  cursor:pointer;
+  background: #e6f2ff;
+  border-radius: 10px;
+  padding: 20px;
 }
 
 .post {
-  margin-top:15px;
-  background:#fff;
-  padding:10px;
-  border-radius:10px;
+  background: white;
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 10px;
 }
 
-.like {
-  color:#ff3366;
-  cursor:pointer;
-}
+.like { cursor: pointer; color: red; }
 </style>
 </head>
 
@@ -91,62 +34,33 @@ button {
 
 <div class="window">
 
-<div class="titlebar">
-clube_dos_haters_do_silas.exe
-</div>
-
-<div class="header">
 <h1>CLUBE DOS HATERS DO SILAS</h1>
-</div>
-
-<div class="content">
-  <div class="card">
-    <h2>motivo #1</h2>
-    <p>passou 2763 atividades 💀</p>
-  </div>
-</div>
-
-<div class="forum">
-<h2>Mini Rede Social</h2>
 
 <input id="name" placeholder="Seu nome">
-<textarea id="comment" placeholder="Escreva algo..."></textarea>
+<textarea id="comment" placeholder="Mensagem"></textarea>
 <input type="file" id="imageUpload">
-
 <button onclick="postComment()">Postar</button>
 
 <div id="posts"></div>
-</div>
 
 </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+<script>
+function getPosts() {
+  return JSON.parse(localStorage.getItem("posts") || "[]");
+}
 
-// 🔴 PUT YOUR REAL CONFIG HERE
-const firebaseConfig = {
-  apiKey: "SUA_API_KEY",
-  authDomain: "SEU_PROJETO.firebaseapp.com",
-  projectId: "SEU_PROJECT_ID"
-};
+function savePosts(posts) {
+  localStorage.setItem("posts", JSON.stringify(posts));
+}
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-// 🔄 LOAD POSTS (NO orderBy = NO BUG)
-onSnapshot(collection(db, "posts"), (snapshot) => {
+function render() {
   const container = document.getElementById("posts");
   container.innerHTML = "";
 
-  let posts = [];
+  let posts = getPosts();
 
-  snapshot.forEach(docSnap => {
-    posts.push({ id: docSnap.id, ...docSnap.data() });
-  });
-
-  // sort manually
-  posts.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+  posts.sort((a,b)=>b.id-a.id);
 
   posts.forEach(p => {
     const div = document.createElement("div");
@@ -156,51 +70,57 @@ onSnapshot(collection(db, "posts"), (snapshot) => {
       <b>${p.name}</b>
       <p>${p.text}</p>
       ${p.image ? `<img src="${p.image}" width="200">` : ""}
-      <div class="like">❤️ ${p.likes || 0}</div>
+      <div class="like">❤️ ${p.likes}</div>
     `;
 
     div.querySelector(".like").onclick = () => {
-      updateDoc(doc(db, "posts", p.id), {
-        likes: (p.likes || 0) + 1
-      });
+      p.likes++;
+      savePosts(posts);
+      render();
     };
 
     container.appendChild(div);
   });
-});
+}
 
-// ✏️ POST
-window.postComment = async function () {
-  const name = document.getElementById("name").value || "Anônimo";
+function postComment() {
+  const name = document.getElementById("name").value || "Anon";
   const text = document.getElementById("comment").value;
   const file = document.getElementById("imageUpload").files[0];
 
   if (!text && !file) return;
 
-  let image = null;
+  const posts = getPosts();
 
   if (file) {
     const reader = new FileReader();
-    reader.onload = async (e) => {
-      await addDoc(collection(db, "posts"), {
+    reader.onload = function(e) {
+      posts.push({
+        id: Date.now(),
         name,
         text,
         image: e.target.result,
-        likes: 0,
-        createdAt: Date.now()
+        likes: 0
       });
+      savePosts(posts);
+      render();
     };
     reader.readAsDataURL(file);
   } else {
-    await addDoc(collection(db, "posts"), {
+    posts.push({
+      id: Date.now(),
       name,
       text,
       image: null,
-      likes: 0,
-      createdAt: Date.now()
+      likes: 0
     });
+    savePosts(posts);
+    render();
   }
-};
+}
+
+// load on start
+render();
 </script>
 
 </body>
