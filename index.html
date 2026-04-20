@@ -4,56 +4,68 @@
 <meta charset="UTF-8">
 <title>Clube dos Haters do Silas</title>
 
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;600&display=swap" rel="stylesheet">
+
 <style>
 body {
   margin: 0;
-  font-family: Segoe UI, Tahoma;
-  background: linear-gradient(180deg,#6ec6ff,#1e90ff,#0b3c91);
+  font-family: 'Fredoka', sans-serif;
+  background: linear-gradient(180deg,#8fe8ff,#00cfff,#0077cc,#aeefff);
 }
 
+/* WINDOW GLASS */
 .window {
   width: 900px;
   margin: 40px auto;
-  border-radius: 8px;
-  background: linear-gradient(#dfefff,#a9cfff);
-  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-  border:1px solid #6ea0d8;
+  border-radius: 20px;
+
+  background: rgba(255,255,255,0.25);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+
+  border: 1px solid rgba(255,255,255,0.6);
+
+  box-shadow:
+    0 0 40px rgba(0,200,255,0.6),
+    inset 0 0 20px rgba(255,255,255,0.5);
 }
 
+/* TITLEBAR */
 .titlebar {
-  height: 32px;
-  background: linear-gradient(#5fa8ff,#2d6cdf);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 10px;
+  height: 34px;
+  border-radius: 20px 20px 0 0;
+  background: linear-gradient(#6ec6ff,#1e90ff,#0057c7);
   color: white;
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  padding: 0 12px;
+
+  box-shadow:
+    inset 0 2px 6px rgba(255,255,255,0.8),
+    0 0 20px rgba(0,150,255,0.6);
 }
 
-.controls span {
-  display:inline-block;
-  width:16px;
-  height:16px;
-  margin-left:6px;
-  border-radius:3px;
-  background:#ff5c5c;
-}
-
+/* HEADER */
 .header {
   text-align:center;
-  padding:50px;
-  background: linear-gradient(#9be7ff,#00bfff,#0077cc);
+  padding:60px;
+  background: linear-gradient(#b6f0ff,#00cfff,#0088cc);
 }
 
 .header h1 {
   margin:0;
-  font-size:40px;
+  font-size:50px;
   color:white;
-  text-shadow:0 0 10px white,0 0 20px #00e0ff;
+  text-shadow:
+    0 0 10px white,
+    0 0 20px #00e0ff,
+    0 0 40px #00e0ff;
 }
 
 .slogan { color:white; }
 
+/* CARDS */
 .content {
   display:grid;
   grid-template-columns: repeat(auto-fit,minmax(250px,1fr));
@@ -62,39 +74,81 @@ body {
 }
 
 .card {
-  background: linear-gradient(#ffffff,#dfefff);
-  border-radius:12px;
+  position: relative;
+  background: rgba(255,255,255,0.4);
+  backdrop-filter: blur(10px);
+  border-radius:20px;
   padding:15px;
-  box-shadow: inset 0 1px 0 white, 0 4px 10px rgba(0,0,0,0.2);
+
+  box-shadow:
+    0 0 20px rgba(0,200,255,0.7),
+    inset 0 2px 6px rgba(255,255,255,0.9);
 }
 
-.card img { width:100%; border-radius:8px; }
+/* shine effect */
+.card::before {
+  content:"";
+  position:absolute;
+  top:0;
+  left:-50%;
+  width:200%;
+  height:100%;
+  background: linear-gradient(120deg,transparent,rgba(255,255,255,0.6),transparent);
+  transform: skewX(-20deg);
+  opacity:0.4;
+}
 
-.forum { padding:20px; }
+.card img {
+  width:100%;
+  border-radius:10px;
+}
+
+/* FORUM */
+.forum {
+  padding:20px;
+}
 
 input, textarea {
   width:100%;
   margin-top:8px;
-  padding:8px;
-  border-radius:8px;
-  border:1px solid #aaa;
+  padding:10px;
+  border-radius:10px;
+  border:none;
 }
 
+/* BUTTON */
 button {
   margin-top:10px;
   padding:10px;
   border:none;
-  border-radius:8px;
-  background: linear-gradient(#4fc3ff,#0077cc);
+  border-radius:12px;
+
+  background: linear-gradient(#00cfff,#0077cc);
   color:white;
+
+  box-shadow:
+    0 0 10px #00e0ff,
+    inset 0 2px 4px rgba(255,255,255,0.8);
+
   cursor:pointer;
 }
 
+button:hover {
+  transform: scale(1.05);
+}
+
+/* POSTS */
 .post {
-  margin-top:15px;
-  background: linear-gradient(#ffffff,#e8f3ff);
+  background: rgba(255,255,255,0.5);
+  backdrop-filter: blur(8px);
+
+  border-radius:15px;
   padding:10px;
-  border-radius:10px;
+  margin-top:15px;
+
+  box-shadow:
+    0 0 15px rgba(0,200,255,0.6),
+    inset 0 2px 5px rgba(255,255,255,0.8);
 }
 
 .username {
@@ -103,7 +157,6 @@ button {
 }
 
 .like {
-  margin-top:5px;
   cursor:pointer;
   color:#ff3366;
 }
@@ -113,63 +166,57 @@ button {
 <body>
 
 <div class="window">
-  <div class="titlebar">
-    <span>clube_dos_haters_do_silas.exe</span>
-    <div class="controls"><span></span><span></span><span></span></div>
-  </div>
 
-  <div class="header">
-    <h1>CLUBE DOS HATERS DO SILAS</h1>
-    <div class="slogan">Investindo bem nos alunos que também odeiam o silas!!!!</div>
-  </div>
+<div class="titlebar">
+clube_dos_haters_do_silas.exe
+</div>
 
-  <div class="content">
-    <div class="card">
-      <h2>motivo #1</h2>
-      <p>passou 2763 atividades 💀</p>
-      <img src="https://static.wikia.nocookie.net/battlefordreamisland/images/5/51/2763Character.png/revision/latest/scale-to-width-down/1000?cb=20250813111826">
-    </div>
+<div class="header">
+<h1>CLUBE DOS HATERS DO SILAS</h1>
+<div class="slogan">Investindo bem nos alunos que também odeiam o silas!!!!</div>
+</div>
 
-    <div class="card">
-      <h2>motivo #2</h2>
-      <p>fala "rapidinho" e vira 40 minutos 😭</p>
-    </div>
-
-    <div class="card">
-      <h2>motivo #3</h2>
-      <p>piada ruim nível lendário 💀</p>
-    </div>
-  </div>
-
-  <div class="forum">
-    <h2>Mini Rede Social</h2>
-    <input id="name" placeholder="Seu nome">
-    <textarea id="comment" placeholder="Escreva algo..."></textarea>
-    <input type="file" id="imageUpload">
-    <button onclick="postComment()">Postar</button>
-    <div id="posts"></div>
+<div class="content">
+  <div class="card">
+    <h2>motivo #1</h2>
+    <p>passou 2763 atividades 💀</p>
+    <img src="https://static.wikia.nocookie.net/battlefordreamisland/images/5/51/2763Character.png">
   </div>
 </div>
 
+<div class="forum">
+<h2>Mini Rede Social</h2>
+
+<input id="name" placeholder="Seu nome">
+<textarea id="comment" placeholder="Escreva algo..."></textarea>
+<input type="file" id="imageUpload">
+
+<button onclick="postComment()">Postar</button>
+
+<div id="posts"></div>
+</div>
+
+</div>
+
 <script>
-function getPosts() {
+function getPosts(){
   return JSON.parse(localStorage.getItem("posts") || "[]");
 }
 
-function savePosts(posts) {
+function savePosts(posts){
   localStorage.setItem("posts", JSON.stringify(posts));
 }
 
-function render() {
+function render(){
   const container = document.getElementById("posts");
   container.innerHTML = "";
 
   let posts = getPosts();
   posts.sort((a,b)=>b.id-a.id);
 
-  posts.forEach(p => {
+  posts.forEach(p=>{
     const div = document.createElement("div");
-    div.className = "post";
+    div.className="post";
 
     div.innerHTML = `
       <div class="username">${p.name}</div>
@@ -178,7 +225,7 @@ function render() {
       <div class="like">❤️ ${p.likes}</div>
     `;
 
-    div.querySelector(".like").onclick = () => {
+    div.querySelector(".like").onclick = ()=>{
       p.likes++;
       savePosts(posts);
       render();
@@ -188,24 +235,24 @@ function render() {
   });
 }
 
-function postComment() {
+function postComment(){
   const name = document.getElementById("name").value || "Anônimo";
   const text = document.getElementById("comment").value;
   const file = document.getElementById("imageUpload").files[0];
 
-  if (!text && !file) return;
+  if(!text && !file) return;
 
   const posts = getPosts();
 
-  if (file) {
+  if(file){
     const reader = new FileReader();
-    reader.onload = function(e) {
+    reader.onload = function(e){
       posts.push({
         id: Date.now(),
         name,
         text,
         image: e.target.result,
-        likes: 0
+        likes:0
       });
       savePosts(posts);
       render();
@@ -216,8 +263,8 @@ function postComment() {
       id: Date.now(),
       name,
       text,
-      image: null,
-      likes: 0
+      image:null,
+      likes:0
     });
     savePosts(posts);
     render();
