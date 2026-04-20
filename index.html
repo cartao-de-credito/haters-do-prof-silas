@@ -37,11 +37,19 @@ body {
 .header h1 {
   margin:0;
   color:white;
-  text-shadow:0 0 10px white;
 }
 
-.slogan {
-  color:white;
+.content {
+  display:grid;
+  grid-template-columns: repeat(auto-fit,minmax(250px,1fr));
+  gap:20px;
+  padding:20px;
+}
+
+.card {
+  background:#fff;
+  border-radius:12px;
+  padding:15px;
 }
 
 .forum {
@@ -53,7 +61,6 @@ input, textarea {
   margin-top:8px;
   padding:8px;
   border-radius:8px;
-  border:1px solid #aaa;
 }
 
 button {
@@ -73,13 +80,9 @@ button {
   border-radius:10px;
 }
 
-.username {
-  font-weight:bold;
-}
-
 .like {
-  cursor:pointer;
   color:#ff3366;
+  cursor:pointer;
 }
 </style>
 </head>
@@ -87,122 +90,117 @@ button {
 <body>
 
 <div class="window">
-  <div class="titlebar">clube_dos_haters_do_silas.exe</div>
 
-  <div class="header">
-    <h1>CLUBE DOS HATERS DO SILAS</h1>
-    <div class="slogan">Investindo bem nos alunos que também odeiam o silas!!!!</div>
-  </div>
+<div class="titlebar">
+clube_dos_haters_do_silas.exe
+</div>
 
-  <div class="forum">
-    <h2>Fórum dos Haters</h2>
+<div class="header">
+<h1>CLUBE DOS HATERS DO SILAS</h1>
+</div>
 
-    <input id="name" placeholder="Seu nome">
-    <textarea id="comment" placeholder="Escreva algo..."></textarea>
-    <input type="file" id="imageUpload">
-    <button onclick="postComment()">Postar</button>
-
-    <div id="posts"></div>
+<div class="content">
+  <div class="card">
+    <h2>motivo #1</h2>
+    <p>passou 2763 atividades 💀</p>
   </div>
 </div>
 
-<script>
-const API = "/api/posts";
+<div class="forum">
+<h2>Mini Rede Social</h2>
 
-// 🔒 escape (important)
-function escapeHtml(s) {
-  return String(s ?? "").replace(/[&<>"']/g, c => ({
-    "&":"&amp;",
-    "<":"&lt;",
-    ">":"&gt;",
-    "\"":"&quot;",
-    "'":"&#39;"
-  }[c]));
-}
+<input id="name" placeholder="Seu nome">
+<textarea id="comment" placeholder="Escreva algo..."></textarea>
+<input type="file" id="imageUpload">
 
-// 🎨 render
-function renderPosts(posts) {
+<button onclick="postComment()">Postar</button>
+
+<div id="posts"></div>
+</div>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, onSnapshot, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+// 🔴 PUT YOUR REAL CONFIG HERE
+const firebaseConfig = {
+  apiKey: "SUA_API_KEY",
+  authDomain: "SEU_PROJETO.firebaseapp.com",
+  projectId: "SEU_PROJECT_ID"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// 🔄 LOAD POSTS (NO orderBy = NO BUG)
+onSnapshot(collection(db, "posts"), (snapshot) => {
   const container = document.getElementById("posts");
   container.innerHTML = "";
+
+  let posts = [];
+
+  snapshot.forEach(docSnap => {
+    posts.push({ id: docSnap.id, ...docSnap.data() });
+  });
+
+  // sort manually
+  posts.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
 
   posts.forEach(p => {
     const div = document.createElement("div");
     div.className = "post";
 
     div.innerHTML = `
-      <div class="username">${escapeHtml(p.name)}</div>
-      <p>${escapeHtml(p.text)}</p>
-      ${p.image ? `<img src="${escapeHtml(p.image)}" width="200">` : ""}
+      <b>${p.name}</b>
+      <p>${p.text}</p>
+      ${p.image ? `<img src="${p.image}" width="200">` : ""}
       <div class="like">❤️ ${p.likes || 0}</div>
     `;
 
-    div.querySelector(".like").onclick = async () => {
-      await fetch(`${API}?id=${encodeURIComponent(p.id)}`, {
-        method: "PATCH"
+    div.querySelector(".like").onclick = () => {
+      updateDoc(doc(db, "posts", p.id), {
+        likes: (p.likes || 0) + 1
       });
-      loadPosts();
     };
 
     container.appendChild(div);
   });
-}
+});
 
-// 🔄 load posts
-async function loadPosts() {
-  try {
-    const res = await fetch(API, { cache: "no-store" });
-    const data = await res.json();
-    renderPosts(data.posts || []);
-  } catch (err) {
-    console.error("load error", err);
-  }
-}
-
-// 📸 read image
-function readFile(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = e => resolve(e.target.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
-// ✏️ post
-async function postComment() {
-  const nameEl = document.getElementById("name");
-  const commentEl = document.getElementById("comment");
-  const fileEl = document.getElementById("imageUpload");
-
-  const name = nameEl.value || "Anônimo";
-  const text = commentEl.value;
-  const file = fileEl.files[0];
+// ✏️ POST
+window.postComment = async function () {
+  const name = document.getElementById("name").value || "Anônimo";
+  const text = document.getElementById("comment").value;
+  const file = document.getElementById("imageUpload").files[0];
 
   if (!text && !file) return;
 
   let image = null;
 
   if (file) {
-    image = await readFile(file);
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      await addDoc(collection(db, "posts"), {
+        name,
+        text,
+        image: e.target.result,
+        likes: 0,
+        createdAt: Date.now()
+      });
+    };
+    reader.readAsDataURL(file);
+  } else {
+    await addDoc(collection(db, "posts"), {
+      name,
+      text,
+      image: null,
+      likes: 0,
+      createdAt: Date.now()
+    });
   }
-
-  await fetch(API, {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({ name, text, image })
-  });
-
-  commentEl.value = "";
-  fileEl.value = "";
-
-  loadPosts();
-}
-
-// 🔁 auto refresh
-setInterval(loadPosts, 3000);
-
-// 🚀 initial
-loadPosts();
+};
 </script>
 
 </body>
