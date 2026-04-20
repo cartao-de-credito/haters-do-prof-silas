@@ -7,42 +7,148 @@
 <style>
 body {
   margin: 0;
-  font-family: Segoe UI;
-  background: linear-gradient(#6ec6ff,#1e90ff,#0b3c91);
+  font-family: Segoe UI, Tahoma;
+  background: linear-gradient(180deg,#6ec6ff,#1e90ff,#0b3c91);
 }
 
 .window {
   width: 900px;
   margin: 40px auto;
-  background: #e6f2ff;
-  border-radius: 10px;
-  padding: 20px;
+  border-radius: 8px;
+  background: linear-gradient(#dfefff,#a9cfff);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  border:1px solid #6ea0d8;
+}
+
+.titlebar {
+  height: 32px;
+  background: linear-gradient(#5fa8ff,#2d6cdf);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px;
+  color: white;
+}
+
+.controls span {
+  display:inline-block;
+  width:16px;
+  height:16px;
+  margin-left:6px;
+  border-radius:3px;
+  background:#ff5c5c;
+}
+
+.header {
+  text-align:center;
+  padding:50px;
+  background: linear-gradient(#9be7ff,#00bfff,#0077cc);
+}
+
+.header h1 {
+  margin:0;
+  font-size:40px;
+  color:white;
+  text-shadow:0 0 10px white,0 0 20px #00e0ff;
+}
+
+.slogan { color:white; }
+
+.content {
+  display:grid;
+  grid-template-columns: repeat(auto-fit,minmax(250px,1fr));
+  gap:20px;
+  padding:20px;
+}
+
+.card {
+  background: linear-gradient(#ffffff,#dfefff);
+  border-radius:12px;
+  padding:15px;
+  box-shadow: inset 0 1px 0 white, 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.card img { width:100%; border-radius:8px; }
+
+.forum { padding:20px; }
+
+input, textarea {
+  width:100%;
+  margin-top:8px;
+  padding:8px;
+  border-radius:8px;
+  border:1px solid #aaa;
+}
+
+button {
+  margin-top:10px;
+  padding:10px;
+  border:none;
+  border-radius:8px;
+  background: linear-gradient(#4fc3ff,#0077cc);
+  color:white;
+  cursor:pointer;
 }
 
 .post {
-  background: white;
-  margin-top: 10px;
-  padding: 10px;
-  border-radius: 10px;
+  margin-top:15px;
+  background: linear-gradient(#ffffff,#e8f3ff);
+  padding:10px;
+  border-radius:10px;
 }
 
-.like { cursor: pointer; color: red; }
+.username {
+  font-weight:bold;
+  color:#0055aa;
+}
+
+.like {
+  margin-top:5px;
+  cursor:pointer;
+  color:#ff3366;
+}
 </style>
 </head>
 
 <body>
 
 <div class="window">
+  <div class="titlebar">
+    <span>clube_dos_haters_do_silas.exe</span>
+    <div class="controls"><span></span><span></span><span></span></div>
+  </div>
 
-<h1>CLUBE DOS HATERS DO SILAS</h1>
+  <div class="header">
+    <h1>CLUBE DOS HATERS DO SILAS</h1>
+    <div class="slogan">Investindo bem nos alunos que também odeiam o silas!!!!</div>
+  </div>
 
-<input id="name" placeholder="Seu nome">
-<textarea id="comment" placeholder="Mensagem"></textarea>
-<input type="file" id="imageUpload">
-<button onclick="postComment()">Postar</button>
+  <div class="content">
+    <div class="card">
+      <h2>motivo #1</h2>
+      <p>passou 2763 atividades 💀</p>
+      <img src="https://static.wikia.nocookie.net/battlefordreamisland/images/5/51/2763Character.png/revision/latest/scale-to-width-down/1000?cb=20250813111826">
+    </div>
 
-<div id="posts"></div>
+    <div class="card">
+      <h2>motivo #2</h2>
+      <p>fala "rapidinho" e vira 40 minutos 😭</p>
+    </div>
 
+    <div class="card">
+      <h2>motivo #3</h2>
+      <p>piada ruim nível lendário 💀</p>
+    </div>
+  </div>
+
+  <div class="forum">
+    <h2>Mini Rede Social</h2>
+    <input id="name" placeholder="Seu nome">
+    <textarea id="comment" placeholder="Escreva algo..."></textarea>
+    <input type="file" id="imageUpload">
+    <button onclick="postComment()">Postar</button>
+    <div id="posts"></div>
+  </div>
 </div>
 
 <script>
@@ -59,7 +165,6 @@ function render() {
   container.innerHTML = "";
 
   let posts = getPosts();
-
   posts.sort((a,b)=>b.id-a.id);
 
   posts.forEach(p => {
@@ -67,7 +172,7 @@ function render() {
     div.className = "post";
 
     div.innerHTML = `
-      <b>${p.name}</b>
+      <div class="username">${p.name}</div>
       <p>${p.text}</p>
       ${p.image ? `<img src="${p.image}" width="200">` : ""}
       <div class="like">❤️ ${p.likes}</div>
@@ -84,7 +189,7 @@ function render() {
 }
 
 function postComment() {
-  const name = document.getElementById("name").value || "Anon";
+  const name = document.getElementById("name").value || "Anônimo";
   const text = document.getElementById("comment").value;
   const file = document.getElementById("imageUpload").files[0];
 
@@ -119,7 +224,6 @@ function postComment() {
   }
 }
 
-// load on start
 render();
 </script>
 
