@@ -162,14 +162,20 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
-
 onSnapshot(q, (snapshot) => {
   const container = document.getElementById("posts");
   container.innerHTML = "";
 
-  snapshot.forEach((docSnap) => {
-    const p = docSnap.data();
+  let docs = [];
 
+  snapshot.forEach((docSnap) => {
+    docs.push({ id: docSnap.id, ...docSnap.data() });
+  });
+
+  // ordena no JS (não depende do Firebase)
+  docs.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+
+  docs.forEach((p) => {
     const div = document.createElement("div");
     div.className = "post";
 
@@ -177,11 +183,11 @@ onSnapshot(q, (snapshot) => {
       <div class="username">${p.name}</div>
       <p>${p.text}</p>
       ${p.image ? `<img src="${p.image}" width="200">` : ""}
-      <div class="like">❤️ ${p.likes}</div>
+      <div class="like">❤️ ${p.likes || 0}</div>
     `;
 
     div.querySelector(".like").onclick = () => {
-      updateDoc(doc(db, "posts", docSnap.id), {
+      updateDoc(doc(db, "posts", p.id), {
         likes: (p.likes || 0) + 1
       });
     };
