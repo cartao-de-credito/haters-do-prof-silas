@@ -2,7 +2,8 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Clube dos Haters do Prof. Silas :3</title>
+<title>Clube dos Haters do Silas</title>
+
 <style>
 body {
   margin: 0;
@@ -16,7 +17,6 @@ body {
   border-radius: 8px;
   background: linear-gradient(#dfefff,#a9cfff);
   box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-  border:1px solid #6ea0d8;
 }
 
 .titlebar {
@@ -29,15 +29,6 @@ body {
   color: white;
 }
 
-.controls span {
-  display:inline-block;
-  width:16px;
-  height:16px;
-  margin-left:6px;
-  border-radius:3px;
-  background:#ff5c5c;
-}
-
 .header {
   text-align:center;
   padding:50px;
@@ -46,30 +37,21 @@ body {
 
 .header h1 {
   margin:0;
-  font-size:40px;
   color:white;
-  text-shadow:0 0 10px white,0 0 20px #00e0ff;
+  text-shadow:0 0 10px white;
 }
 
-.slogan { color:white; }
+.slogan {
+  color:white;
+}
 
-.content {
-  display:grid;
-  grid-template-columns: repeat(auto-fit,minmax(250px,1fr));
-  gap:20px;
+.forum {
   padding:20px;
 }
 
-.card {
-  background: linear-gradient(#ffffff,#dfefff);
-  border-radius:12px;
-  padding:15px;
-  box-shadow: inset 0 1px 0 white, 0 4px 10px rgba(0,0,0,0.2);
+.forum h2 {
+  color:#0055aa;
 }
-
-.card img { width:100%; border-radius:8px; }
-
-.forum { padding:20px; }
 
 input, textarea {
   width:100%;
@@ -84,73 +66,55 @@ button {
   padding:10px;
   border:none;
   border-radius:8px;
-  background: linear-gradient(#4fc3ff,#0077cc);
+  background:#0077cc;
   color:white;
   cursor:pointer;
 }
 
 .post {
   margin-top:15px;
-  background: linear-gradient(#ffffff,#e8f3ff);
+  background:#fff;
   padding:10px;
   border-radius:10px;
 }
 
 .username {
   font-weight:bold;
-  color:#0055aa;
 }
 
-.like {
-  margin-top:5px;
-  cursor:pointer;
-  color:#ff3366;
-}
 </style>
 </head>
+
 <body>
 
 <div class="window">
-  <div class="titlebar">
-    <span>clube_dos_haters_do_silas.exe</span>
-    <div class="controls"><span></span><span></span><span></span></div>
-  </div>
 
-  <div class="header">
-    <h1>CLUBE DOS HATERS DO PROF. SILAS!1!!!1</h1>
-    <div class="slogan"> * Investindo bem nos alunos que também odeiam o silas!!!! *</div>
-  </div>
-
-  <div class="content">
-    <div class="card">
-      <h2>motivo #1</h2>
-      <p>passou 2763 atividades e espera a gente responder tudo../p>
-      <img src="https://static.wikia.nocookie.net/battlefordreamisland/images/5/51/2763Character.png/revision/latest/scale-to-width-down/1000?cb=20250813111826">
-    </div>
-
-    <div class="card">
-      <h2>motivo #2</h2>
-      <p>gosta muito de um silencio.. deixem a gente conversar em paz!!1!!</p>
-    </div>
-
-    <div class="card">
-      <h2>motivo #3</h2>
-      <p>Passa atividades DIFÍCEIS de fazer. Nunca vou esquecer a da alura.</p>
-    </div>
-  </div>
-  <div class="forum">
-   <h2>Fórum dos Haters</h2>
-<input type="text" id="name" placeholder="Ponha seu lindo nome aqui! :3">
-<textarea id="comment" placeholder="Escreva algo!!"></textarea>
-<input type="file" id="imageUpload">
-<button onclick="postComment()">Postar</button>
-<div id="posts"></div>
-</div>
+<div class="titlebar">
+  clube_dos_haters_do_silas.exe
 </div>
 
+<div class="header">
+  <h1>CLUBE DOS HATERS DO SILAS</h1>
+  <div class="slogan">Investindo bem nos alunos que também odeiam o silas!!!!</div>
+</div>
+
+<div class="forum">
+  <h2>Fórum dos Haters</h2>
+
+  <input type="text" id="name" placeholder="Seu nome">
+  <textarea id="comment" placeholder="Escreva algo..."></textarea>
+  <input type="file" id="imageUpload">
+  <button onclick="postComment()">Postar</button>
+
+  <div id="posts"></div>
+</div>
+
+</div>
+
+<!-- FIREBASE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, orderBy, query, updateDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "SUA_API_KEY",
@@ -161,21 +125,14 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
-onSnapshot(q, (snapshot) => {
+// REALTIME POSTS (THIS FIXES YOUR PROBLEM)
+onSnapshot(collection(db, "posts"), (snapshot) => {
   const container = document.getElementById("posts");
   container.innerHTML = "";
 
-  let docs = [];
+  snapshot.forEach((doc) => {
+    const p = doc.data();
 
-  snapshot.forEach((docSnap) => {
-    docs.push({ id: docSnap.id, ...docSnap.data() });
-  });
-
-  // ordena no JS (não depende do Firebase)
-  docs.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-
-  docs.forEach((p) => {
     const div = document.createElement("div");
     div.className = "post";
 
@@ -183,19 +140,13 @@ onSnapshot(q, (snapshot) => {
       <div class="username">${p.name}</div>
       <p>${p.text}</p>
       ${p.image ? `<img src="${p.image}" width="200">` : ""}
-      <div class="like">❤️ ${p.likes || 0}</div>
     `;
-
-    div.querySelector(".like").onclick = () => {
-      updateDoc(doc(db, "posts", p.id), {
-        likes: (p.likes || 0) + 1
-      });
-    };
 
     container.appendChild(div);
   });
 });
 
+// POST FUNCTION
 window.postComment = async function () {
   const name = document.getElementById("name").value || "Anônimo";
   const text = document.getElementById("comment").value;
@@ -209,9 +160,7 @@ window.postComment = async function () {
       await addDoc(collection(db, "posts"), {
         name,
         text,
-        image: e.target.result,
-        likes: 0,
-        createdAt: serverTimestamp()
+        image: e.target.result
       });
     };
     reader.readAsDataURL(file);
@@ -219,9 +168,7 @@ window.postComment = async function () {
     await addDoc(collection(db, "posts"), {
       name,
       text,
-      image: null,
-      likes: 0,
-      createdAt: serverTimestamp()
+      image: null
     });
   }
 };
